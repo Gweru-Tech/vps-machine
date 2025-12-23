@@ -1,0 +1,29 @@
+services:
+  # Main hosting service
+  - type: web
+    name: hosting-vps
+    runtime: node
+    plan: free
+    rootDir: .
+    buildCommand: "npm install --production"
+    startCommand: "npm start"
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+    healthCheckPath: /health
+    domains:
+      - yourdomain.com
+
+  # PostgreSQL database
+  - type: postgres
+    name: hosting-db
+    plan: free
+    ipAllowList: []
+    
+  # Redis for caching (optional)
+  - type: redis
+    name: hosting-cache
+    plan: free
+    ipAllowList: []
