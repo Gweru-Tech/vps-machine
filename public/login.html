@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Hosting VPS</title>
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center;">
+    <div class="login-container" style="width: 100%; max-width: 400px; padding: 2rem;">
+        <div class="card" style="background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);">
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <div class="logo-icon" style="margin: 0 auto 1rem; width: 60px; height: 60px; font-size: 1.5rem;">🚀</div>
+                <h1 style="font-size: 1.875rem; font-weight: 700; margin-bottom: 0.5rem;">Hosting VPS</h1>
+                <p style="color: var(--text-secondary);">Sign in to your account</p>
+            </div>
+
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-input" id="email" placeholder="Enter your email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" class="form-input" id="password" placeholder="Enter your password" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 1rem;">
+                    <span id="loginButtonText">Sign In</span>
+                    <span id="loginSpinner" class="loading" style="display: none;"></span>
+                </button>
+            </form>
+
+            <div style="text-align: center; padding-top: 1rem; border-top: 1px solid var(--border-color);">
+                <p style="color: var(--text-secondary); font-size: 0.875rem;">
+                    Don't have an account? 
+                    <a href="#register" onclick="showRegisterForm()" style="color: var(--primary-color); text-decoration: none;">Sign up</a>
+                </p>
+            </div>
+
+            <div id="notification" class="alert" style="display: none; margin-top: 1rem;">
+                <span id="notificationMessage"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Registration Form (Hidden by default) -->
+    <div id="registerForm" class="login-container" style="width: 100%; max-width: 400px; padding: 2rem; display: none;">
+        <div class="card" style="background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);">
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <div class="logo-icon" style="margin: 0 auto 1rem; width: 60px; height: 60px; font-size: 1.5rem;">🚀</div>
+                <h1 style="font-size: 1.875rem; font-weight: 700; margin-bottom: 0.5rem;">Create Account</h1>
+                <p style="color: var(--text-secondary);">Start your hosting journey</p>
+            </div>
+
+            <form onsubmit="handleRegister(event)">
+                <div class="form-group">
+                    <label class="form-label">First Name</label>
+                    <input type="text" class="form-input" id="regFirstName" placeholder="Enter your first name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Last Name</label>
+                    <input type="text" class="form-input" id="regLastName" placeholder="Enter your last name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-input" id="regEmail" placeholder="Enter your email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" class="form-input" id="regPassword" placeholder="Create a password" required minlength="6">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Confirm Password</label>
+                    <input type="password" class="form-input" id="regConfirmPassword" placeholder="Confirm your password" required minlength="6">
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 1rem;">
+                    <span id="registerButtonText">Create Account</span>
+                    <span id="registerSpinner" class="loading" style="display: none;"></span>
+                </button>
+            </form>
+
+            <div style="text-align: center; padding-top: 1rem; border-top: 1px solid var(--border-color);">
+                <p style="color: var(--text-secondary); font-size: 0.875rem;">
+                    Already have an account? 
+                    <a href="#login" onclick="showLoginForm()" style="color: var(--primary-color); text-decoration: none;">Sign in</a>
+                </p>
+            </div>
+
+            <div id="registerNotification" class="alert" style="display: none; margin-top: 1rem;">
+                <span id="registerNotificationMessage"></span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class AuthManager {
+            constructor() {
+                this.checkAuthStatus();
+            }
+
+            checkAuthStatus() {
+                const token = localStorage.getItem('token');
+                if (token) {
+                    // Verify token is still valid
+                    this.verifyToken(token);
+                }
+            }
+
+            async verifyToken(token) {
+                try {
+                    const response = await fetch('/api/auth/me', {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    if (response.ok) {
+                        window.location.href = '/';
+                    } else {
+                        localStorage.removeItem('token');
+                    }
+                } catch (error) {
+                    localStorage.removeItem('token');
+                }
+            }
+
+            async login(email, password) {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Login failed');
+                }
+
+                return data;
+            }
+
+            async register(firstName, lastName, email, password) {
+                const response = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ firstName, lastName, email, password })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Registration failed');
+                }
+
+                return data;
+            }
+
+            showNotification(message, type = 'success', elementId = 'notification') {
+                const notification = document.getElementById(elementId);
+                const messageElement = document.getElementById(
+                    elementId === 'notification' ? 'notificationMessage' : 'registerNotificationMessage'
+                );
+                
+                notification.className = `alert alert-${type}`;
+                messageElement.textContent = message;
+                notification.style.display = 'block';
+                
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                }, 5000);
+            }
+
+            setLoading(form, loading) {
+                const isLogin = form === 'login';
+                const button = document.getElementById(isLogin ? 'loginButtonText' : 'registerButtonText');
+                const spinner = document.getElementById(isLogin ? 'loginSpinner' : 'registerSpinner');
+                
+                if (loading) {
+                    button.style.display = 'none';
+                    spinner.style.display = 'inline-block';
+                } else {
+                    button.style.display = 'inline';
+                    spinner.style.display = 'none';
+                }
+            }
+
+            async handleLogin(event) {
+                event.preventDefault();
+                
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+
+                if (!email || !password) {
+                    this.showNotification('Please fill in all fields', 'danger');
+                    return;
+                }
+
+                this.setLoading('login', true);
+
+                try {
+                    const data = await this.login(email, password);
+                    
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    
+                    this.showNotification('Login successful! Redirecting...', 'success');
+                    
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 1000);
+                    
+                } catch (error) {
+                    this.showNotification(error.message, 'danger');
+                } finally {
+                    this.setLoading('login', false);
+                }
+            }
+
+            async handleRegister(event) {
+                event.preventDefault();
+                
+                const firstName = document.getElementById('regFirstName').value;
+                const lastName = document.getElementById('regLastName').value;
+                const email = document.getElementById('regEmail').value;
+                const password = document.getElementById('regPassword').value;
+                const confirmPassword = document.getElementById('regConfirmPassword').value;
+
+                if (!firstName || !lastName || !email || !password || !confirmPassword) {
+                    this.showNotification('Please fill in all fields', 'danger', 'register');
+                    return;
+                }
+
+                if (password !== confirmPassword) {
+                    this.showNotification('Passwords do not match', 'danger', 'register');
+                    return;
+                }
+
+                if (password.length < 6) {
+                    this.showNotification('Password must be at least 6 characters', 'danger', 'register');
+                    return;
+                }
+
+                this.setLoading('register', true);
+
+                try {
+                    const data = await this.register(firstName, lastName, email, password);
+                    
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    
+                    this.showNotification('Account created successfully! Redirecting...', 'success', 'register');
+                    
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 1000);
+                    
+                } catch (error) {
+                    this.showNotification(error.message, 'danger', 'register');
+                } finally {
+                    this.setLoading('register', false);
+                }
+            }
+        }
+
+        // Global functions
+        let authManager;
+
+        function showLoginForm() {
+            document.getElementById('registerForm').style.display = 'none';
+            document.querySelector('.login-container').style.display = 'block';
+        }
+
+        function showRegisterForm() {
+            document.querySelector('.login-container').style.display = 'none';
+            document.getElementById('registerForm').style.display = 'block';
+        }
+
+        function handleLogin(event) {
+            authManager.handleLogin(event);
+        }
+
+        function handleRegister(event) {
+            authManager.handleRegister(event);
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            authManager = new AuthManager();
+        });
+    </script>
+</body>
+</html>

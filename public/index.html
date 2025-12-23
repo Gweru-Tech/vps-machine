@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hosting VPS - Dashboard</title>
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+    <div id="app">
+        <!-- Mobile Menu Toggle -->
+        <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+
+        <div class="dashboard">
+            <!-- Sidebar -->
+            <aside class="sidebar" id="sidebar">
+                <div class="sidebar-header">
+                    <div class="logo">
+                        <div class="logo-icon">🚀</div>
+                        <span>Hosting VPS</span>
+                    </div>
+                </div>
+                
+                <nav class="sidebar-nav">
+                    <a href="#dashboard" class="nav-item active" onclick="showSection('dashboard')">
+                        <span class="nav-icon">📊</span>
+                        Dashboard
+                    </a>
+                    <a href="#domains" class="nav-item" onclick="showSection('domains')">
+                        <span class="nav-icon">🌐</span>
+                        Domains
+                    </a>
+                    <a href="#files" class="nav-item" onclick="showSection('files')">
+                        <span class="nav-icon">📁</span>
+                        Files
+                    </a>
+                    <a href="#websites" class="nav-item" onclick="showSection('websites')">
+                        <span class="nav-icon">🌍</span>
+                        Websites
+                    </a>
+                    <a href="#analytics" class="nav-item" onclick="showSection('analytics')">
+                        <span class="nav-icon">📈</span>
+                        Analytics
+                    </a>
+                    <a href="#settings" class="nav-item" onclick="showSection('settings')">
+                        <span class="nav-icon">⚙️</span>
+                        Settings
+                    </a>
+                </nav>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="main-content">
+                <!-- Header -->
+                <header class="header">
+                    <h1 class="header-title">Dashboard</h1>
+                    <div class="header-actions">
+                        <button class="btn btn-primary" onclick="showAddDomainModal()">
+                            <span>+</span> Add Domain
+                        </button>
+                        <div class="user-info">
+                            <div class="user-avatar" id="userAvatar">U</div>
+                            <span id="userEmail">user@example.com</span>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- Dashboard Section -->
+                <section id="dashboard-section" class="content-section">
+                    <!-- Stats Grid -->
+                    <div class="grid grid-cols-4">
+                        <div class="stat-card">
+                            <div class="stat-label">Active Domains</div>
+                            <div class="stat-value" id="activeDomains">0</div>
+                            <div class="stat-change positive">+12% from last month</div>
+                        </div>
+                        <div class="stat-card success">
+                            <div class="stat-label">Websites</div>
+                            <div class="stat-value" id="totalWebsites">0</div>
+                            <div class="stat-change positive">+5% from last month</div>
+                        </div>
+                        <div class="stat-card warning">
+                            <div class="stat-label">Files</div>
+                            <div class="stat-value" id="totalFiles">0</div>
+                            <div class="stat-change negative">-2% from last month</div>
+                        </div>
+                        <div class="stat-card danger">
+                            <div class="stat-label">Storage Used</div>
+                            <div class="stat-value" id="storageUsed">0%</div>
+                            <div class="stat-change positive">+8% from last month</div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Row -->
+                    <div class="grid grid-cols-2">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Traffic Overview</h3>
+                                <select class="form-select" style="width: auto;" onchange="updateTrafficChart(this.value)">
+                                    <option value="7d">Last 7 days</option>
+                                    <option value="30d">Last 30 days</option>
+                                    <option value="24h">Last 24 hours</option>
+                                </select>
+                            </div>
+                            <div class="card-content">
+                                <canvas id="trafficChart" width="400" height="200"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Storage Usage</h3>
+                            </div>
+                            <div class="card-content">
+                                <div style="margin-bottom: 1rem;">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                        <span>Used: <strong id="storageUsedMB">0 MB</strong></span>
+                                        <span>Total: <strong id="storageQuotaMB">1024 MB</strong></span>
+                                    </div>
+                                    <div class="progress">
+                                        <div class="progress-bar" id="storageProgressBar" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                                <canvas id="storageChart" width="400" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Recent Activity</h3>
+                        </div>
+                        <div class="card-content">
+                            <div id="recentActivity" class="activity-list">
+                                <p style="text-align: center; color: var(--text-secondary);">No recent activity</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Domains Section -->
+                <section id="domains-section" class="content-section" style="display: none;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Your Domains</h3>
+                            <button class="btn btn-primary btn-sm" onclick="showAddDomainModal()">Add Domain</button>
+                        </div>
+                        <div class="card-content">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Domain</th>
+                                        <th>Status</th>
+                                        <th>SSL Status</th>
+                                        <th>Created</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="domainsTable">
+                                    <tr>
+                                        <td colspan="5" style="text-align: center; color: var(--text-secondary);">Loading domains...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Files Section -->
+                <section id="files-section" class="content-section" style="display: none;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Your Files</h3>
+                            <button class="btn btn-primary btn-sm" onclick="document.getElementById('fileUpload').click()">Upload File</button>
+                            <input type="file" id="fileUpload" style="display: none;" onchange="uploadFile(this)" multiple>
+                        </div>
+                        <div class="card-content">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Size</th>
+                                        <th>Type</th>
+                                        <th>Public</th>
+                                        <th>Downloads</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="filesTable">
+                                    <tr>
+                                        <td colspan="6" style="text-align: center; color: var(--text-secondary);">Loading files...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Websites Section -->
+                <section id="websites-section" class="content-section" style="display: none;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Your Websites</h3>
+                            <button class="btn btn-primary btn-sm" onclick="showAddWebsiteModal()">Add Website</button>
+                        </div>
+                        <div class="card-content">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Domain</th>
+                                        <th>Status</th>
+                                        <th>Created</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="websitesTable">
+                                    <tr>
+                                        <td colspan="5" style="text-align: center; color: var(--text-secondary);">Loading websites...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Analytics Section -->
+                <section id="analytics-section" class="content-section" style="display: none;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Analytics Overview</h3>
+                            <select class="form-select" style="width: auto;" onchange="updateAnalytics(this.value)">
+                                <option value="7d">Last 7 days</option>
+                                <option value="30d">Last 30 days</option>
+                                <option value="24h">Last 24 hours</option>
+                            </select>
+                        </div>
+                        <div class="card-content">
+                            <div class="grid grid-cols-3">
+                                <div class="stat-card">
+                                    <div class="stat-label">Page Views</div>
+                                    <div class="stat-value" id="pageViews">0</div>
+                                </div>
+                                <div class="stat-card success">
+                                    <div class="stat-label">File Downloads</div>
+                                    <div class="stat-value" id="fileDownloads">0</div>
+                                </div>
+                                <div class="stat-card danger">
+                                    <div class="stat-label">Errors</div>
+                                    <div class="stat-value" id="errors">0</div>
+                                </div>
+                            </div>
+                            <canvas id="analyticsChart" width="800" height="400" style="margin-top: 2rem;"></canvas>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Settings Section -->
+                <section id="settings-section" class="content-section" style="display: none;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Account Settings</h3>
+                        </div>
+                        <div class="card-content">
+                            <form id="settingsForm" onsubmit="updateSettings(event)">
+                                <div class="form-group">
+                                    <label class="form-label">First Name</label>
+                                    <input type="text" class="form-input" id="firstName" placeholder="Enter your first name">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Last Name</label>
+                                    <input type="text" class="form-input" id="lastName" placeholder="Enter your last name">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Email</label>
+                                    <input type="email" class="form-input" id="email" placeholder="Enter your email">
+                                </div>
+                                <button type="submit" class="btn btn-primary">Update Profile</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Change Password</h3>
+                        </div>
+                        <div class="card-content">
+                            <form id="passwordForm" onsubmit="changePassword(event)">
+                                <div class="form-group">
+                                    <label class="form-label">Current Password</label>
+                                    <input type="password" class="form-input" id="currentPassword" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">New Password</label>
+                                    <input type="password" class="form-input" id="newPassword" required minlength="6">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Confirm New Password</label>
+                                    <input type="password" class="form-input" id="confirmPassword" required minlength="6">
+                                </div>
+                                <button type="submit" class="btn btn-primary">Change Password</button>
+                            </form>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+
+        <!-- Modals -->
+        <div id="addDomainModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title">Add New Domain</h2>
+                    <button class="modal-close" onclick="closeModal('addDomainModal')">&times;</button>
+                </div>
+                <form id="addDomainForm" onsubmit="addDomain(event)">
+                    <div class="form-group">
+                        <label class="form-label">Domain Name</label>
+                        <input type="text" class="form-input" id="domainName" placeholder="example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            <input type="checkbox" id="autoRenew"> Auto-renew
+                        </label>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Domain</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="notification" class="alert" style="display: none; position: fixed; top: 20px; right: 20px; z-index: 3000; max-width: 400px;">
+            <span id="notificationMessage"></span>
+        </div>
+    </div>
+
+    <script src="js/dashboard.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</body>
+</html>
